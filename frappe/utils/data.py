@@ -1356,8 +1356,9 @@ def money_in_words(
 		main_currency = d.get("currency", "INR")
 	if not fraction_currency:
 		fraction_currency = frappe.db.get_value("Currency", main_currency, "fraction", cache=True) or _(
-			"Cent"
+			"Cents"
 		)
+	unit = frappe.db.get_value("Currency", main_currency, "unit_name", cache=True) or main_currency
 
 	number_format = (
 		frappe.db.get_value("Currency", main_currency, "number_format", cache=True)
@@ -1387,14 +1388,13 @@ def money_in_words(
 	elif main == "0":
 		out = in_words(fraction, in_million).title() + " " + fraction_currency
 	else:
-		out = _(main_currency, context="Currency") + " " + in_words(main, in_million).title()
+		out = _(in_words(main, in_million).title()) + ' ' + unit
 		if cint(fraction):
 			out = (
 				out + " " + _("and") + " " + in_words(fraction, in_million).title() + " " + fraction_currency
 			)
 
-	return out + " " + _("only.")
-
+	return out
 
 #
 # convert number to words

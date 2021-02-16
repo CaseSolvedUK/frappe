@@ -1,5 +1,5 @@
 *.pyc
-*.py~
+*~
 *.comp.js
 *.DS_Store
 .wnf-lang-status

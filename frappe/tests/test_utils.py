@@ -333,35 +333,25 @@ class TestFilters(FrappeTestCase):
 
 class TestMoney(FrappeTestCase):
 	def test_money_in_words(self):
-		nums_bhd = [
-			(5000, "BHD Five Thousand only."),
-			(5000.0, "BHD Five Thousand only."),
-			(0.1, "One Hundred Fils only."),
-			(0, "BHD Zero only."),
-			("Fail", ""),
-		]
+		tests = {
+			"BHD": [
+				(5000, "Five Thousand Bahraini Dinars"),
+				(5000.0, "Five Thousand Bahraini Dinars"),
+				(0.1, "One Hundred Fulus"),
+				(0, "Zero Bahraini Dinars"),
+				("Fail", "")],
+			"NGN": [
+				(5000, "Five Thousand Naira"),
+				(5000.0, "Five Thousand Naira"),
+				(0.1, "Ten Kobo"),
+				(0, "Zero Naira"),
+				("Fail", "")]
+		}
 
-		nums_ngn = [
-			(5000, "NGN Five Thousand only."),
-			(5000.0, "NGN Five Thousand only."),
-			(0.1, "Ten Kobo only."),
-			(0, "NGN Zero only."),
-			("Fail", ""),
-		]
-
-		for num in nums_bhd:
-			self.assertEqual(
-				money_in_words(num[0], "BHD"),
-				num[1],
-				"{} is not the same as {}".format(money_in_words(num[0], "BHD"), num[1]),
-			)
-
-		for num in nums_ngn:
-			self.assertEqual(
-				money_in_words(num[0], "NGN"),
-				num[1],
-				"{} is not the same as {}".format(money_in_words(num[0], "NGN"), num[1]),
-			)
+		for code, nums in tests.items():
+			for number, string in nums:
+				words = money_in_words(number, code)
+				self.assertEqual(words, string, f"{words} is not the same as {string}")
 
 
 class TestDataManipulation(FrappeTestCase):

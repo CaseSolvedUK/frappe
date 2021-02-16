@@ -1,10 +1,14 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: MIT. See LICENSE
+import sys
+import select
 import getpass
 
 import frappe
 from frappe.geo.doctype.country.country import import_country_and_currency
 from frappe.utils.password import update_password
+from frappe.utils import now_datetime
+from datetime import timedelta
 
 
 def before_install():
@@ -168,6 +172,87 @@ def complete_setup_wizard():
 		}
 	)
 
+
+def import_country_and_currency():
+	from frappe.geo.country_info import get_all
+	from frappe.utils import update_progress_bar
+
+	data = get_all()
+
+	print("\nOverwriting your existing Country & Currency data in 10 seconds, press Enter to abort...")
+	r, w, x = select.select([sys.stdin], [], [], 10)
+	if r:
+		overwrite = False
+		r[0].read()
+	else:
+		overwrite = True
+
+	for i, name in enumerate(data):
+		update_progress_bar("Updating country info", i, len(data))
+		country = frappe._dict(data[name])
+		add_country_and_currency(name, country, overwrite)
+
+	del_orphaned_currencies()
+	print("")
+
+	# enable frequently used currencies
+	for currency in ("INR", "USD", "GBP", "EUR", "AED", "AUD", "JPY", "CNY", "CHF"):
+		frappe.db.set_value("Currency", currency, "enabled", 1)
+
+def add_country_and_currency(name, country, overwrite=False):
+	data = {
+		"country_name": name,
+		"code": country.code,
+		"date_format": country.date_format or "dd-mm-yyyy",
+		"time_format": country.time_format or "HH:mm:ss",
+		"time_zones": "\n".join(country.timezones or []),
+		"docstatus": 0
+	}
+	try:
+		doc = frappe.get_last_doc("Country", filters={"code": country.code})
+		if overwrite:
+			doc.update(data).save()
+	except frappe.exceptions.DoesNotExistError:
+		frappe.get_doc(doctype="Country", **data).db_insert()
+
+	if country.currency:
+		try:
+			exists = True
+			doc = frappe.get_cached_doc("Currency", country.currency)
+			recent = doc.modified > (now_datetime() - timedelta(minutes=5))
+		except frappe.exceptions.DoesNotExistError:
+			exists = False
+			recent = False
+			doc = frappe.get_doc({
+				"doctype": "Currency",
+				"currency_name": country.currency})
+
+		if not exists or (overwrite and not recent):
+			if country.currency_name:
+				doc.unit_name = country.currency_name
+			if country.currency_fraction:
+				doc.fraction = country.currency_fraction
+			if country.currency_fraction_units:
+				doc.fraction_units = country.currency_fraction_units
+			if country.smallest_currency_fraction_value:
+				doc.smallest_currency_fraction_value = country.smallest_currency_fraction_value
+			if country.currency_symbol:
+				doc.symbol = country.currency_symbol
+			if country.number_format:
+				doc.number_format = country.number_format
+			doc.docstatus = 0
+			if exists:
+				doc.save()
+			else:
+				doc.insert()
+		frappe.db.set_value("Country", name, "currency", country.currency)
+
+def del_orphaned_currencies():
+	used = set(c[0] for c in frappe.get_all("Country", fields=['currency'], as_list=True) if c[0])
+	whole = set(c[0] for c in frappe.get_all("Currency", fields=['currency_name'], as_list=True) if c[0])
+	orphans = list(whole - used)
+	if orphans:
+		frappe.db.delete("Currency", {'currency_name': ['in', orphans]})
 
 def add_standard_navbar_items():
 	navbar_settings = frappe.get_single("Navbar Settings")
