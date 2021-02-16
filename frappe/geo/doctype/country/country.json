@@ -11,13 +11,13 @@
   "date_format",
   "time_format",
   "time_zones",
-  "code"
+  "code",
+  "currency"
  ],
  "fields": [
   {
    "fieldname": "country_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Country Name",
    "oldfieldname": "country_name",
    "oldfieldtype": "Data",
@@ -47,7 +47,14 @@
    "fieldname": "code",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Code"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
   }
  ],
  "icon": "fa fa-globe",
@@ -61,6 +68,7 @@
  "permissions": [
   {
    "create": 1,
+   "delete": 1,
    "email": 1,
    "export": 1,
    "import": 1,
