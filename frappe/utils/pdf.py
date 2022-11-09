@@ -20,6 +20,7 @@ from frappe.core.doctype.file.utils import find_file_by_url
 from frappe.utils import cstr, scrub_urls
 from frappe.utils.caching import redis_cache
 from frappe.utils.jinja_globals import bundled_asset, is_rtl
+from frappe.utils.logger import pipe_to_log
 
 PDF_CONTENT_ERRORS = [
 	"ContentNotFoundError",
@@ -28,6 +29,8 @@ PDF_CONTENT_ERRORS = [
 	"RemoteHostClosedError",
 ]
 
+logger = frappe.logger("wkhtmltopdf", max_size=100000, file_count=3)
+logger.setLevel("INFO")
 
 def pdf_header_html(soup, head, content, styles, html_id, css, path=None):
 	if not path:
@@ -80,9 +83,9 @@ def pdf_footer_html(soup, head, content, styles, html_id, css, path=None):
 
 
 def get_pdf(html, options=None, output: PdfWriter | None = None):
+	global logger
 	html = scrub_urls(html)
 	html, options = prepare_options(html, options)
-
 	options.update({"disable-javascript": "", "disable-local-file-access": ""})
 
 	filedata = ""
@@ -90,8 +93,13 @@ def get_pdf(html, options=None, output: PdfWriter | None = None):
 		options.update({"disable-smart-shrinking": ""})
 
 	try:
+		# wkhtmltopdf writes the pdf to stdout and errors to stderr
+		# pdfkit v1.0.0 writes the pdf to file or returns it
+		# stderr is written to sys.stdout if verbose=True is supplied
 		# Set filename property to false, so no file is actually created
-		filedata = pdfkit.from_string(html, options=options or {}, verbose=True)
+		# defaults to redirecting stdout
+		with pipe_to_log(logger.info):
+			filedata = pdfkit.from_string(html, False, options=options or {}, verbose=True)
 
 		# create in-memory binary streams from filedata and create a PdfReader object
 		reader = PdfReader(io.BytesIO(filedata))
@@ -148,7 +156,6 @@ def prepare_options(html, options):
 			"print-media-type": None,
 			"background": None,
 			"images": None,
-			"quiet": None,
 			# 'no-outline': None,
 			"encoding": "UTF-8",
 			# 'load-error-handling': 'ignore'
