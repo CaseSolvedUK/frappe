@@ -15,6 +15,7 @@ def create_content(doc):
 	content = []
 	if doc.get("onboarding"):
 		content.append({"type": "onboarding", "data": {"onboarding_name": doc.onboarding, "col": 12}})
+
 	if doc.charts:
 		invalid_links = []
 		for c in doc.charts:
@@ -61,15 +62,6 @@ def create_content(doc):
 
 
 def update_workspace(doc, seq, content):
-	if (
-		not doc.title
-		and (not doc.content or doc.content == "[]")
-		and not doc.get("is_standard")
-		and not doc.public
-	):
-		doc.sequence_id = seq + 1
-		doc.content = json.dumps(content)
-		doc.public = 0 if doc.for_user else 1
 		doc.title = doc.get("extends") or doc.get("label")
 		doc.extends = ""
 		doc.category = ""
