@@ -852,7 +852,7 @@ from {tables}
 
 		else:
 			escape = True
-			df = meta.get("fields", {"fieldname": f.fieldname})
+			df = meta.get("fields", filters={"fieldname": f.fieldname})
 			df = df[0] if df else None
 
 			if df and df.fieldtype in ("Check", "Float", "Int", "Currency", "Percent"):

@@ -177,32 +177,34 @@ class Meta(Document):
 		return serialize(self)
 
 	def get_link_fields(self):
-		return self.get("fields", {"fieldtype": "Link", "options": ["!=", "[Select]"]})
+		return self.get("fields", filters={"fieldtype": "Link", "options": ["!=", "[Select]"]})
 
 	def get_data_fields(self):
-		return self.get("fields", {"fieldtype": "Data"})
+		return self.get("fields", filters={"fieldtype": "Data"})
 
 	def get_phone_fields(self):
-		return self.get("fields", {"fieldtype": "Phone"})
+		return self.get("fields", filters={"fieldtype": "Phone"})
 
 	def get_dynamic_link_fields(self):
 		if not hasattr(self, "_dynamic_link_fields"):
-			self._dynamic_link_fields = self.get("fields", {"fieldtype": "Dynamic Link"})
+			self._dynamic_link_fields = self.get("fields", filters={"fieldtype": "Dynamic Link"})
 		return self._dynamic_link_fields
 
 	def get_select_fields(self):
-		return self.get("fields", {"fieldtype": "Select", "options": ["not in", ["[Select]", "Loading..."]]})
+		return self.get(
+			"fields", filters={"fieldtype": "Select", "options": ["not in", ["[Select]", "Loading..."]]}
+		)
 
 	def get_image_fields(self):
-		return self.get("fields", {"fieldtype": "Attach Image"})
+		return self.get("fields", filters={"fieldtype": "Attach Image"})
 
 	def get_code_fields(self):
-		return self.get("fields", {"fieldtype": "Code"})
+		return self.get("fields", filters={"fieldtype": "Code"})
 
 	def get_set_only_once_fields(self):
 		"""Return fields with `set_only_once` set"""
 		if not hasattr(self, "_set_only_once_fields"):
-			self._set_only_once_fields = self.get("fields", {"set_only_once": 1})
+			self._set_only_once_fields = self.get("fields", filters={"set_only_once": 1})
 			fieldnames = [d.fieldname for d in self._set_only_once_fields]
 
 			for df in self.standard_set_once_fields:
@@ -462,7 +464,7 @@ class Meta(Document):
 		if self.name == "DocType":
 			self._table_fields = DOCTYPE_TABLE_FIELDS
 		else:
-			self._table_fields = self.get("fields", {"fieldtype": ["in", table_fields]})
+			self._table_fields = self.get("fields", filters={"fieldtype": ["in", table_fields]})
 
 	def sort_fields(self):
 		"""
@@ -567,7 +569,7 @@ class Meta(Document):
 	def get_fields_to_check_permissions(self, user_permission_doctypes):
 		fields = self.get(
 			"fields",
-			{
+			filters={
 				"fieldtype": "Link",
 				"parent": self.name,
 				"ignore_user_permissions": ("!=", 1),
