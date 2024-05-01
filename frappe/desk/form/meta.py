@@ -186,7 +186,7 @@ class FormMeta(Meta):
 	def add_search_fields(self):
 		"""add search fields found in the doctypes indicated by link fields' options"""
 		# TODO: IF field is not found replace with useful message
-		for df in self.get("fields", {"fieldtype": "Link", "options": ["!=", "[Select]"]}):
+		for df in self.get("fields", filters={"fieldtype": "Link", "options": ["!=", "[Select]"]}):
 			if df.options:
 				try:
 					search_fields = frappe.get_meta(df.options).search_fields
@@ -216,7 +216,7 @@ class FormMeta(Meta):
 		frappe.throw(msg, title=_("Missing DocType"))
 
 	def add_linked_document_type(self):
-		for df in self.get("fields", {"fieldtype": "Link"}):
+		for df in self.get("fields", filters={"fieldtype": "Link"}):
 			if df.options:
 				try:
 					df.linked_document_type = frappe.get_meta(df.options).document_type
