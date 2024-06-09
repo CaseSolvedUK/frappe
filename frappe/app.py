@@ -363,7 +363,7 @@ def handle_exception(e):
 		if hasattr(frappe.local, "login_manager"):
 			frappe.local.login_manager.clear_cookies()
 
-	if http_status_code >= 500:
+	if http_status_code >= 400 and http_status_code not in [401, 403, 404]:
 		make_error_snapshot(e)
 
 	if return_as_message:
