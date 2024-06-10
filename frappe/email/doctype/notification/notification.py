@@ -222,24 +222,13 @@ def get_context(context):
 		message = frappe.render_template(self.message, context)
 		if self.sender and self.sender_email:
 			sender = formataddr((self.sender, self.sender_email))
-		frappe.sendmail(
-			recipients=recipients,
-			subject=subject,
-			sender=sender,
-			cc=cc,
-			bcc=bcc,
-			message=message,
-			reference_doctype=get_reference_doctype(doc),
-			reference_name=get_reference_name(doc),
-			attachments=attachments,
-			expose_recipients="header",
-			print_letterhead=((attachments and attachments[0].get("print_letterhead")) or False),
-		)
 
 		# Add mail notification to communication list
 		# No need to add if it is already a communication.
-		if doc.doctype != "Communication":
-			make_communication(
+		if doc.doctype == "Communication":
+			comm_name = doc.name
+		else:
+			comm_name = make_communication(
 				doctype=doc.doctype,
 				name=doc.name,
 				content=message,
@@ -252,7 +241,22 @@ def get_context(context):
 				cc=cc,
 				bcc=bcc,
 				communication_type="Automated Message",
-			)
+			)["name"]
+
+		frappe.sendmail(
+			recipients=recipients,
+			subject=subject,
+			sender=sender,
+			cc=cc,
+			bcc=bcc,
+			message=message,
+			reference_doctype=get_reference_doctype(doc),
+			reference_name=get_reference_name(doc),
+			communication=comm_name,
+			attachments=attachments,
+			expose_recipients="header",
+			print_letterhead=((attachments and attachments[0].get("print_letterhead")) or False),
+		)
 
 	def send_a_slack_msg(self, doc, context):
 		send_slack_message(
