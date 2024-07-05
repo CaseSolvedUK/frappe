@@ -32,12 +32,14 @@ class ToDo(Document):
 		reference_type: DF.Link | None
 		role: DF.Link | None
 		sender: DF.Data | None
+		start_date: DF.Date
 		status: DF.Literal["Open", "Closed", "Cancelled"]
 	# end: auto-generated types
 	DocType = "ToDo"
 
 	def validate(self):
 		self._assignment = None
+		self.validate_dates()
 		if self.is_new():
 			if self.assigned_by == self.allocated_to:
 				assignment_message = frappe._("{0} self assigned this task: {1}").format(
@@ -63,6 +65,10 @@ class ToDo(Document):
 					)
 
 				self._assignment = {"text": removal_message, "comment_type": "Assignment Completed"}
+
+	def validate_dates(self):
+		if self.start_date and self.date and self.start_date > self.date:
+			frappe.throw(frappe._("ToDo start date must be before due date"))
 
 	def on_update(self):
 		if self._assignment:

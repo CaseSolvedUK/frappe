@@ -22,7 +22,7 @@ frappe.ui.form.on("ToDo", {
 				frm.add_custom_button(
 					__("Close"),
 					function () {
-						frm.set_value("status", "Closed");
+						frm.set_value({status: "Closed", date: frappe.datetime.nowdate()});
 						frm.save(null, function () {
 							// back to list
 							frappe.set_route("List", "ToDo");
