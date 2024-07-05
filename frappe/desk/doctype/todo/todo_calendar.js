@@ -3,7 +3,7 @@
 
 frappe.views.calendar["ToDo"] = {
 	field_map: {
-		start: "date",
+		start: "start_date",
 		end: "date",
 		id: "name",
 		title: "description",

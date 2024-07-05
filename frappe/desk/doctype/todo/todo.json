@@ -12,6 +12,7 @@
   "priority",
   "column_break_2",
   "color",
+  "start_date",
   "date",
   "allocated_to",
   "description_section",
@@ -155,16 +156,25 @@
    "in_global_search": 1,
    "in_standard_filter": 1,
    "label": "Allocated To",
-   "options": "User"
+   "options": "User",
+   "search_index": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-check",
  "idx": 2,
  "links": [],
- "modified": "2023-10-05 07:44:38.476400",
+ "modified": "2024-07-05 21:54:43.424032",
  "modified_by": "Administrator",
  "module": "Desk",
  "name": "ToDo",
+ "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [
   {
@@ -195,6 +205,7 @@
  "sender_field": "sender",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "subject_field": "description",
  "title_field": "description",
  "track_changes": 1,
