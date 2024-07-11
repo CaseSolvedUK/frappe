@@ -99,20 +99,20 @@ def get_context(context):
 		"""get list of documents that will be triggered today"""
 		docs = []
 
+		# default: Days Before
 		diff_days = self.days_in_advance
 		if self.event == "Days After":
 			diff_days = -diff_days
 
-		reference_date = add_to_date(nowdate(), days=diff_days)
-		reference_date_start = reference_date + " 00:00:00.000000"
-		reference_date_end = reference_date + " 23:59:59.000000"
+		reference_date_start = add_to_date(nowdate(), days=diff_days)
+		reference_date_end = add_to_date(nowdate(), days=(diff_days + 1))
 
 		doc_list = frappe.get_all(
 			self.document_type,
 			fields="name",
 			filters=[
 				{self.date_changed: (">=", reference_date_start)},
-				{self.date_changed: ("<=", reference_date_end)},
+				{self.date_changed: ("<", reference_date_end)},
 			],
 		)
 
