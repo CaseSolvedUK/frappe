@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "description_and_status",
+  "title",
   "status",
   "priority",
   "column_break_2",
@@ -165,12 +166,19 @@
    "fieldtype": "Date",
    "label": "Start Date",
    "reqd": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-check",
  "idx": 2,
  "links": [],
- "modified": "2024-07-05 21:54:43.424032",
+ "modified": "2024-07-26 17:39:58.800305",
  "modified_by": "Administrator",
  "module": "Desk",
  "name": "ToDo",
@@ -201,13 +209,13 @@
   }
  ],
  "quick_entry": 1,
- "search_fields": "description, reference_type, reference_name",
+ "search_fields": "title, description, reference_type, reference_name",
  "sender_field": "sender",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
  "subject_field": "description",
- "title_field": "description",
+ "title_field": "title",
  "track_changes": 1,
  "track_seen": 1
 }
