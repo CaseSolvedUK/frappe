@@ -34,6 +34,7 @@ class ToDo(Document):
 		sender: DF.Data | None
 		start_date: DF.Date
 		status: DF.Literal["Open", "Closed", "Cancelled"]
+		title: DF.Data
 	# end: auto-generated types
 	DocType = "ToDo"
 

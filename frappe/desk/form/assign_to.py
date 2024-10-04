@@ -57,6 +57,11 @@ def add(args=None, *, ignore_permissions=False):
 	users_with_duplicate_todo = []
 	shared_with_users = []
 
+	title = escape_html(
+		args.get("title", _("{0} {1}").format(args["doctype"], args["name"]))
+	)
+	description = args.get("description", _("Assignment for {0} {1}").format(args["doctype"], args["name"]))
+
 	for assign_to in frappe.parse_json(args.get("assign_to")):
 		filters = {
 			"reference_type": args["doctype"],
@@ -82,8 +87,9 @@ def add(args=None, *, ignore_permissions=False):
 					"doctype": "ToDo",
 					"allocated_to": assign_to,
 					"reference_type": args["doctype"],
+					"title": title,
 					"reference_name": str(args["name"]),
-					"description": args.get("description"),
+					"description": description,
 					"priority": args.get("priority", "Medium"),
 					"status": "Open",
 					"date": args.get("date", nowdate()),

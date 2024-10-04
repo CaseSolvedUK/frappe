@@ -63,7 +63,6 @@ frappe.ui.form.AssignTo = class AssignTo {
 				},
 			});
 		}
-		me.assign_to.dialog.clear();
 		me.assign_to.dialog.show();
 	}
 	remove(owner) {
@@ -162,7 +161,11 @@ frappe.ui.form.AssignToDialog = class AssignToDialog {
 		let me = this;
 
 		if (me.frm && me.frm.meta.title_field) {
-			me.dialog.set_value("description", me.frm.doc[me.frm.meta.title_field]);
+			me.dialog.set_value("title", `${me.frm.doc[me.frm.meta.title_field]} (${__(me.frm.doc.doctype)} ${me.frm.doc.name})`);
+			me.dialog.set_value("description", `<a href="/app/Form/${me.frm.doc.doctype}/${me.frm.doc.name}">${me.frm.doc[me.frm.meta.title_field]}</a>`);
+		} else if (me.frm?.doc) {
+			me.dialog.set_value("title", `${__(me.frm.doc.doctype)} ${me.frm.doc.name}`);
+			me.dialog.set_value("description", `<a href="/app/Form/${me.frm.doc.doctype}/${me.frm.doc.name}">${me.frm.doc.name}</a>`);
 		}
 	}
 	get_fields() {
@@ -233,7 +236,12 @@ frappe.ui.form.AssignToDialog = class AssignToDialog {
 				fieldtype: "Section Break",
 			},
 			{
-				label: __("Comment"),
+				label: __("Title"),
+				fieldtype: "Data",
+				fieldname: "title",
+			},
+			{
+				label: __("Description"),
 				fieldtype: "Text Editor",
 				fieldname: "description",
 			},
