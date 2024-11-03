@@ -289,13 +289,15 @@ def get_node_env():
 def get_safe_max_old_space_size():
 	import psutil
 
-	safe_max_old_space_size = 0
+	max_size = 2048
+	safe_max_old_space_size = max_size
 	try:
 		total_memory = psutil.virtual_memory().total / (1024 * 1024)
 		# reference for the safe limit assumption
 		# https://nodejs.org/api/cli.html#cli_max_old_space_size_size_in_megabytes
 		# set minimum value 1GB
-		safe_max_old_space_size = max(1024, int(total_memory * 0.75))
+		# vite builds require much more RAM
+		safe_max_old_space_size = max(max_size, int(total_memory * 0.5))
 	except Exception:
 		pass
 
