@@ -77,16 +77,18 @@ class WebsiteTheme(Document):
 
 		self.theme_scss = content = get_scss(self)
 		content = content.replace("\n", "\\n")
-		command = ["node", "generate_bootstrap_theme.js", output_path, content]
+		frappe_user = frappe.get_conf().get("frappe_user")
+		cwd = frappe.get_app_path("frappe", "..")
+		command = ["sudo", "-H", "-u", frappe_user, "/bin/sh", "-l", "-c", f"node '{cwd}/generate_bootstrap_theme.js' '{output_path}' '{content}' "]
 
-		process = Popen(command, cwd=frappe.get_app_path("frappe", ".."), stdout=PIPE, stderr=PIPE)
+		process = Popen(command, stdout=PIPE, stderr=PIPE)
 
 		stderr = process.communicate()[1]
 
 		if stderr:
 			stderr = frappe.safe_decode(stderr)
 			stderr = stderr.replace("\n", "<br>")
-			frappe.throw(f'<div style="font-family: monospace;">{stderr}</div>')
+			frappe.throw(stderr)
 		else:
 			self.theme_url = "/files/website_theme/" + file_name
 
