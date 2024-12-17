@@ -982,8 +982,6 @@ class Document(BaseDocument):
 		if self.flags.notifications_executed is None:
 			self.flags.notifications_executed = []
 
-		from frappe.email.doctype.notification.notification import evaluate_alert
-
 		if self.flags.notifications is None:
 
 			def _get_notifications():
@@ -1004,7 +1002,7 @@ class Document(BaseDocument):
 			if alert.name in self.flags.notifications_executed:
 				return
 
-			evaluate_alert(self, alert.name, alert.event)
+			enqueue_notification(self, alert)
 			self.flags.notifications_executed.append(alert.name)
 
 		event_map = {
@@ -1746,3 +1744,19 @@ def unlock_document(doctype: str | None = None, name: str | None = None, args=No
 		name = str(args["name"])
 	frappe.get_doc(doctype, name).unlock()
 	frappe.msgprint(frappe._("Document Unlocked"), alert=True)
+
+def call_notification(doctype, docname, alert_name, alert_event):
+	from frappe.email.doctype.notification.notification import evaluate_alert
+	# make sure we get the fresh document
+	doc = frappe.get_doc(doctype, docname)
+	evaluate_alert(doc, alert_name, alert_event)
+
+def enqueue_notification(doc, alert):
+	frappe.enqueue(
+		call_notification,
+		enqueue_after_commit=True,
+		doctype=doc.doctype,
+		docname=doc.name,
+		alert_name=alert.name,
+		alert_event=alert.event,
+	)

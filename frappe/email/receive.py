@@ -641,16 +641,9 @@ class InboundMail(Email):
 		if self.parent_communication():
 			data["in_reply_to"] = self.parent_communication().name
 
-		append_to = self.append_to if self.email_account.use_imap else self.email_account.append_to
-
-		if self.reference_document():
-			data["reference_doctype"] = self.reference_document().doctype
-			data["reference_name"] = self.reference_document().name
-		elif append_to and append_to != "Communication":
-			reference_name = self._create_reference_document(append_to)
-			if reference_name:
-				data["reference_doctype"] = append_to
-				data["reference_name"] = reference_name
+		if ref_doc := self.reference_document():
+			data["reference_doctype"] = ref_doc.doctype
+			data["reference_name"] = ref_doc.name
 
 		if self.is_notification():
 			# Disable notifications for notification.
@@ -662,9 +655,17 @@ class InboundMail(Email):
 		communication = frappe.get_doc(data)
 		communication.flags.in_receive = True
 		communication.insert(ignore_permissions=True)
-
 		# Communication might have been modified by some hooks, reload before saving
 		communication.reload()
+
+		# email status is set in validate()
+		email_okay = communication.email_status == "Open"
+		append_to = self.append_to if self.email_account.use_imap else self.email_account.append_to
+		if not ref_doc and append_to and append_to != "Communication" and email_okay:
+			reference_name = self._create_reference_document(append_to)
+			if reference_name:
+				communication.reference_doctype = append_to
+				communication.reference_name = reference_name
 
 		# save attachments
 		communication._attachments = self.save_attachments_in_doc(communication)
