@@ -6,7 +6,7 @@ import json
 import frappe
 from frappe.model.document import Document
 from frappe.permissions import AUTOMATIC_ROLES
-from frappe.utils import get_fullname, parse_addr
+from frappe.utils import get_fullname, parse_addr, getdate
 
 exclude_from_linked_with = True
 
@@ -68,6 +68,8 @@ class ToDo(Document):
 				self._assignment = {"text": removal_message, "comment_type": "Assignment Completed"}
 
 	def validate_dates(self):
+		self.start_date = getdate(self.start_date)
+		self.date = getdate(self.date)
 		if self.start_date and self.date and self.start_date > self.date:
 			frappe.throw(frappe._("ToDo start date must be before due date"))
 
