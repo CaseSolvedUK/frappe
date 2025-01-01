@@ -279,6 +279,10 @@ class Communication(Document, CommunicationEmailMixin):
 		# comments count for the list view
 		update_comment_in_doc(self)
 
+		# ignore spam
+		if self.email_status != "Open":
+			return
+
 		parent = get_parent_doc(self)
 		if (method := getattr(parent, "on_communication_update", None)) and callable(method):
 			parent.on_communication_update(self)
