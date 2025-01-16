@@ -127,6 +127,20 @@ def mark_as_spam(communication: str, sender: str):
 		)
 	set_value("Communication", communication, "email_status", "Spam")
 
+@frappe.whitelist()
+def notify_as_scam(communication: str, sender: str):
+	"Send email to postmaster@ and abuse@"
+	doc = frappe.get_doc("Communication", communication)
+	usr, sep, domain = sender.rpartition("@")
+	frappe.sendmail(
+		recipients=[f"postmaster@{domain}", f"abuse@{domain}"],
+		subject="Reporting a scam email originating from your domain",
+		message=doc.content,
+		reference_doctype=doc.reference_doctype,
+		reference_name=doc.reference_name,
+		reply_to=sender,
+		in_reply_to=communication,
+	)
 
 def link_communication_to_document(doc, reference_doctype, reference_name, ignore_communication_links):
 	if not ignore_communication_links:
