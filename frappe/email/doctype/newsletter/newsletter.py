@@ -55,7 +55,6 @@ class Newsletter(WebsiteGenerator):
 		self.route = f"newsletters/{self.name}"
 		self.validate_sender_address()
 		self.validate_publishing()
-		self.validate_scheduling_date()
 
 	@property
 	def newsletter_recipients(self) -> list[str]:
