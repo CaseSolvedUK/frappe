@@ -142,6 +142,7 @@
    "depends_on": "eval:doc.content_type === 'HTML'",
    "fieldname": "message_html",
    "fieldtype": "HTML Editor",
+   "ignore_xss_filter": 1,
    "label": "Message (HTML)",
    "mandatory_depends_on": "eval:doc.content_type === 'HTML'"
   },
@@ -253,7 +254,7 @@
  "is_published_field": "published",
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-11-12 12:41:02.569631",
+ "modified": "2025-01-29 23:14:28.574760",
  "modified_by": "Administrator",
  "module": "Email",
  "name": "Newsletter",
