@@ -55,7 +55,6 @@ class Newsletter(WebsiteGenerator):
 		self.route = f"newsletters/{self.name}"
 		self.validate_sender_address()
 		self.validate_publishing()
-		self.validate_scheduling_date()
 
 	@property
 	def newsletter_recipients(self) -> list[str]:
@@ -147,13 +146,6 @@ class Newsletter(WebsiteGenerator):
 	def validate_publishing(self):
 		if self.send_webview_link and not self.published:
 			frappe.throw(_("Newsletter must be published to send webview link in email"))
-
-	def validate_scheduling_date(self):
-		if (
-			self.schedule_sending
-			and frappe.utils.get_datetime(self.schedule_send) < frappe.utils.now_datetime()
-		):
-			frappe.throw(_("Past dates are not allowed for Scheduling."))
 
 	def get_linked_email_queue(self) -> list[str]:
 		"""Get list of email queue linked to this newsletter."""
