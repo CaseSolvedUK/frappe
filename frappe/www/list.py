@@ -16,7 +16,10 @@ def get_context(context, **dict_params):
 	"""Returns context for a list standard list page.
 	Will also update `get_list_context` from the doctype module file"""
 	frappe.local.form_dict.update(dict_params)
+	frappe.local.form_dict.limit = cint(frappe.local.form_dict.limit, 20)
 	doctype = frappe.local.form_dict.doctype
+	if not doctype:
+		frappe.throw("No DocType", exc=frappe.PageDoesNotExistError)
 	context.parents = [{"route": "me", "title": _("My Account")}]
 	context.meta = frappe.get_meta(doctype)
 	context.update(get_list_context(context, doctype) or {})
@@ -25,7 +28,6 @@ def get_context(context, **dict_params):
 	context.update(get(**frappe.local.form_dict))
 
 
-@frappe.whitelist(allow_guest=True)
 def get(doctype, txt=None, limit_start=0, limit=20, pathname=None, **kwargs):
 	"""Returns processed HTML page for a standard listing."""
 	limit_start = cint(limit_start)
@@ -77,7 +79,7 @@ def get(doctype, txt=None, limit_start=0, limit=20, pathname=None, **kwargs):
 def get_list_data(
 	doctype, txt=None, limit_start=0, fields=None, cmd=None, limit=20, web_form_name=None, **kwargs
 ):
-	"""Returns processed HTML page for a standard listing."""
+	"""Returns public list data"""
 	limit_start = cint(limit_start)
 
 	if frappe.is_table(doctype):
@@ -90,6 +92,12 @@ def get_list_data(
 	controller = get_controller(doctype)
 	meta = frappe.get_meta(doctype)
 
+	list_view_fields = set([df.fieldname for df in meta.fields if df.in_list_view])
+	list_view_fields.add("name")
+	if fields:
+		fields = [f for f in fields if f in list_view_fields]
+	else:
+		fields = list(list_view_fields)
 	filters = prepare_filters(doctype, controller, kwargs)
 	list_context = get_list_context(frappe._dict(), doctype, web_form_name)
 	list_context.title_field = getattr(controller, "website", {}).get(
@@ -109,6 +117,9 @@ def get_list_data(
 		limit_page_length=limit,
 		order_by=list_context.order_by or "modified desc",
 	)
+
+	if not list_context.get_list:
+		kwargs["fields"] = fields
 
 	# allow guest if flag is set
 	if not list_context.get_list and (list_context.allow_guest or meta.allow_guest_to_view):
