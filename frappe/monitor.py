@@ -3,6 +3,7 @@
 
 import datetime
 import json
+import logging
 import os
 import traceback
 import uuid
@@ -15,6 +16,12 @@ from frappe.utils.data import cint
 
 MONITOR_REDIS_KEY = "monitor-transactions"
 MONITOR_MAX_ENTRIES = 1000000
+
+# Use a rotating logger for monitor file output, 10MB x2
+logger = frappe.logger(module="monitor.json", allow_site=False, max_size=10000000, file_count=2)
+formatter = logging.Formatter("%(message)s")
+for h in logger.handlers:
+	h.setFormatter(formatter)
 
 
 def start(transaction_type="request", method=None, kwargs=None):
@@ -38,10 +45,6 @@ def get_trace_id() -> str | None:
 	"""Get unique ID for current transaction."""
 	if monitor := getattr(frappe.local, "monitor", None):
 		return monitor.data.uuid
-
-
-def log_file():
-	return os.path.join(frappe.utils.get_bench_path(), "logs", "monitor.json.log")
 
 
 class Monitor:
@@ -128,9 +131,8 @@ def flush():
 		logs = frappe.cache.lrange(MONITOR_REDIS_KEY, 0, -1)
 		if logs:
 			logs = list(map(frappe.safe_decode, logs))
-			with open(log_file(), "a", os.O_NONBLOCK) as f:
-				f.write("\n".join(logs))
-				f.write("\n")
+			for line in logs:
+				logger.error(line)
 			# Remove fetched entries from cache
 			frappe.cache.ltrim(MONITOR_REDIS_KEY, len(logs) - 1, -1)
 	except Exception:
