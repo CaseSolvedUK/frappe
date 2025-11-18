@@ -89,6 +89,8 @@ class WebsiteTheme(Document):
 
 	def generate_bootstrap_theme(self):
 		from subprocess import PIPE, Popen
+		import os
+		import pwd
 
 		# create theme file in site public files folder
 		folder_path = abspath(frappe.utils.get_files_path("website_theme", is_private=False))
@@ -105,9 +107,13 @@ class WebsiteTheme(Document):
 
 		self.theme_scss = content = get_scss(self)
 		content = content.replace("\n", "\\n")
-		command = ["node", "generate_bootstrap_theme.js", output_path, content]
 
-		process = Popen(command, cwd=frappe.get_app_source_path("frappe"), stdout=PIPE, stderr=PIPE)
+		# set the environment for nvm
+		env = os.environ.copy()
+		env["HOME"] = pwd.getpwuid(os.geteuid()).pw_dir
+		env["USER"] = pwd.getpwuid(os.geteuid()).pw_name
+		command = ["/bin/sh", "-l", "-c", f"node 'generate_bootstrap_theme.js' '{output_path}' '{content}' "]
+		process = Popen(command, env=env, cwd=frappe.get_app_source_path("frappe"), stdout=PIPE, stderr=PIPE)
 
 		stderr = process.communicate()[1]
 
